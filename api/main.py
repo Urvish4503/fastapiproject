@@ -1,7 +1,5 @@
 from fastapi import FastAPI, Response, status, HTTPException
-from fastapi.params import Body
 from pydantic import BaseModel
-from random import randrange
 import psycopg2
 import psycopg2.extras
 import time
@@ -62,49 +60,61 @@ def new_post(post: Post):
         """INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""",
         (post.title, post.content, post.is_public),
     )
+
     newone = cursor.fetchone()
+
     conn.commit()
+
     return {"my new post": newone}
 
 
-# @app.get("/post/latest")
-# def last_post():
-#     if len(my_posts) == 0:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-#     return my_posts[len(my_posts) - 1]
+@app.get("/post/{id}", status_code=status.HTTP_200_OK)
+def get_post(id: int):
+    cursor.execute(
+        """SELECT * FROM posts where id = %s""",
+        (str(id)),
+    )
+
+    post = cursor.fetchone()
+
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"a post with id: {id} does not exists.",
+        )
+
+    return {"post": post}
 
 
-# @app.get("/post/{id}", status_code=status.HTTP_200_OK)
-# def get_post(id: int):
-#     for i in my_posts:
-#         if int(id) == i["uid"]:
-#             return {"data": i}
-#     return Response(status_code=status.HTTP_404_NOT_FOUND)
+@app.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(id: int):
+    try:
+        cursor.execute(
+            """DELETE FROM posts WHERE id = %s RETURNING *""",
+            (id,),
+        )
+        deleted_post = cursor.fetchone()
+
+        if not deleted_post:
+            raise Response(status_code=status.HTTP_404_NOT_FOUND)
+
+        conn.commit()
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    except Exception as e:
+        print(e)
+        raise Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-# @app.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)
-# def delete_post(id: int):
-#     inx = user_index(id)
-#     if inx > -1:
-#         my_posts.pop(inx)
-#         return Response(status_code=status.HTTP_204_NO_CONTENT)
-#     return Response(status_code=status.HTTP_404_NOT_FOUND)
+@app.put("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def edit_post(id: int, post: Post):
+    cursor.execute(
+        """UPDATE posts SET title = %s, content = %s WHERE id = %s RETURNING *""",
+        (post.title, post.content, id),
+    )
 
+    updated_post = cursor.fetchone()
 
-# @app.put("/post/{id}")
-# def change_post(id: int, post: Post):
-#     inx = user_index(id)
+    if not updated_post:
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
 
-#     if inx == -1:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail=f"post with {id} does not exist.",
-#         )
-
-#     temp = post.model_dump()
-#     temp["uid"] = id
-#     my_posts[inx]["title"] = temp["title"]
-#     my_posts[inx]["content"] = temp["content"]
-#     return {
-#         "data": temp,
-#     }
+    conn.commit()
