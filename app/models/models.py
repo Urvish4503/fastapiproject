@@ -1,7 +1,7 @@
 from sqlalchemy import Integer, String, Boolean, Column
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
-from .database import Base
+from ..db.database import Base
 
 
 class Post(Base):
