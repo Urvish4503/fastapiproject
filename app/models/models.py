@@ -1,7 +1,8 @@
 from sqlalchemy import Integer, String, Boolean, Column
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
-from ..db.database import Base
+from ..database import Base
+from pydantic import BaseModel
 
 
 class Post(Base):
@@ -14,3 +15,9 @@ class Post(Base):
     created_at = Column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
+
+
+class NewPost(BaseModel):
+    title: str
+    content: str
+    published: bool = True

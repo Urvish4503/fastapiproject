@@ -16,8 +16,4 @@ def get_db():
         yield db
     finally:
         db.close()
-        print(
-                    """
-            /ᐠ_ ꞈ _ᐟ\\
-            """
-                )
+        print("/ᐠ_ ꞈ _ᐟ\\")
