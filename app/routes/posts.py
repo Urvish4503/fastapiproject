@@ -1,6 +1,6 @@
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from ..database import get_db
-from ..models.schema import Post, User, NewPost, EditPost, NewUser
+from ..models.post import Post, NewPost, EditPost
 from sqlalchemy.orm import Session
 from typing import Any
 
@@ -10,7 +10,7 @@ router = APIRouter()
 @router.get("/post/all")
 async def get_all(db: Session = Depends(get_db)):
     post = db.query(Post).all()
-    return {"message": post}
+    return {"message": "All the post are here", "posts": post}
 
 
 @router.post("/post/new", status_code=status.HTTP_201_CREATED, response_class=Post)
@@ -25,7 +25,7 @@ async def make_new_post(post: NewPost, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_post)
 
-    return new_post
+    return Response(status_code=status.HTTP_201_CREATED)
 
 
 @router.get("/post/{id}", status_code=status.HTTP_200_OK)
@@ -69,12 +69,4 @@ async def edit_post(id: int, new_data: EditPost, db: Session = Depends(get_db)) 
 
     db.commit()
 
-    return {"status": "ok"}
-
-
-@router.post("/user/new", status_code=status.HTTP_201_CREATED)
-def creat_user(user: NewUser, db: Session = Depends(get_db)) -> None:
-    new_user = User(**user.model_dump())
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+    return Response(status_code=status.HTTP_200_OK)
