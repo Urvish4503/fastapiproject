@@ -26,8 +26,3 @@ class UserOut(BaseModel):
     email: EmailStr
     id: int
     created_at: datetime
-
-
-class UserCred(BaseModel):
-    email: EmailStr
-    password: str

@@ -36,10 +36,14 @@ async def get_post(id: int, db: Session = Depends(get_db)) -> Response:
 
     if not post:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Item not found.",
         )
 
-    return Response(status_code=status.HTTP_200_OK, content={"post": post})
+    return Response(
+        status_code=status.HTTP_200_OK,
+        content={"post": post},
+    )
 
 
 @router.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -48,7 +52,8 @@ async def delete_post(id: int, db: Session = Depends(get_db)) -> Response:
 
     if not post.first():
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Item not found.",
         )
 
     post.delete(synchronize_session=False)
@@ -64,7 +69,8 @@ async def edit_post(id: int, new_data: EditPost, db: Session = Depends(get_db)) 
 
     if not post_query.first():
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Item not found.",
         )
 
     post_query.update(new_data.model_dump(), synchronize_session=False)

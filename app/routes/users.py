@@ -9,6 +9,7 @@ router = APIRouter(
 )
 
 
+# FIXME: This accepts empty strings that it shouldn't.
 @router.post("/user/new", status_code=status.HTTP_201_CREATED, response_model=UserOut)
 def creat_user(user: NewUser, db: Session = Depends(get_db)):
     """
