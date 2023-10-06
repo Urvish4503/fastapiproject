@@ -3,6 +3,7 @@ from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from ..database import Base
 from pydantic import BaseModel, EmailStr
+from datetime import datetime
 
 
 class User(Base):
@@ -23,3 +24,10 @@ class NewUser(BaseModel):
 
 class UserOut(BaseModel):
     email: EmailStr
+    id: int
+    created_at: datetime
+
+
+class UserCred(BaseModel):
+    email: EmailStr
+    password: str

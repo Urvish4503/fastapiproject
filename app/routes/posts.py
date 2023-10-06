@@ -4,7 +4,9 @@ from ..models.post import Post, NewPost, EditPost
 from sqlalchemy.orm import Session
 from typing import Any
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Post"],
+)
 
 
 @router.get("/post/all")
@@ -13,7 +15,7 @@ async def get_all(db: Session = Depends(get_db)):
     return {"message": "All the post are here", "posts": post}
 
 
-@router.post("/post/new", status_code=status.HTTP_201_CREATED, response_class=Post)
+@router.post("/post/new", status_code=status.HTTP_201_CREATED)
 async def make_new_post(post: NewPost, db: Session = Depends(get_db)):
     new_post = Post(
         title=post.title,
