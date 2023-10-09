@@ -1,8 +1,8 @@
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from ..database import get_db
-from ..models.post import Post, NewPost, EditPost
+from ..models.post import Post, NewPost, EditPost, PostOut
 from sqlalchemy.orm import Session
-from typing import Any
+from typing import Any, Dict
 
 router = APIRouter(
     tags=["Post"],
@@ -10,13 +10,13 @@ router = APIRouter(
 
 
 @router.get("/post/all")
-async def get_all(db: Session = Depends(get_db)):
+async def get_all(db: Session = Depends(get_db)) -> Dict[str, Any]:
     post = db.query(Post).all()
     return {"message": "All the post are here", "posts": post}
 
 
-@router.post("/post/new", status_code=status.HTTP_201_CREATED)
-async def make_new_post(post: NewPost, db: Session = Depends(get_db)):
+@router.post("/post/new", status_code=status.HTTP_201_CREATED, response_model=PostOut)
+async def make_new_post(post: NewPost, db: Session = Depends(get_db)) -> PostOut:
     new_post = Post(
         title=post.title,
         content=post.content,
@@ -27,7 +27,7 @@ async def make_new_post(post: NewPost, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_post)
 
-    return Response(status_code=status.HTTP_201_CREATED)
+    return new_post
 
 
 @router.get("/post/{id}", status_code=status.HTTP_200_OK)
@@ -73,7 +73,7 @@ async def edit_post(id: int, new_data: EditPost, db: Session = Depends(get_db)) 
             detail="Item not found.",
         )
 
-    post_query.update(new_data.model_dump(), synchronize_session=False)
+    post_query.update(new_data.model_dump(), synchronize_session=False)  # type: ignore
 
     db.commit()
 

@@ -9,21 +9,28 @@ router = APIRouter(
 )
 
 
-# FIXME: This accepts empty strings that it shouldn't.
 @router.post("/user/new", status_code=status.HTTP_201_CREATED, response_model=UserOut)
-def creat_user(user: NewUser, db: Session = Depends(get_db)):
+def creat_user(
+    user: NewUser,
+    db: Session = Depends(get_db),
+):
     """
-    Creates a new user.
+    Create a new user.
+
+    This function creates a new user with the provided user information. If a user with the same email already exists,
+    an HTTPException with status code 409 (Conflict) is raised.
+
+    Args:
+        user (NewUser): The user info to be created.
 
     Raises:
-        HTTPException: Raised if a user with the same email already exists.
+        HTTPException: If there was an issue creating a user.
 
     Returns:
-        UserOut: The newly created user.
+        UserOut: Newly created user.
     """
-    new_user = User(**user.model_dump())
 
-    is_in = db.query(User).filter(User.email == new_user.email).first()
+    is_in = db.query(User).filter(User.email == user.email).first()
 
     if is_in:
         raise HTTPException(
@@ -31,9 +38,11 @@ def creat_user(user: NewUser, db: Session = Depends(get_db)):
             detail="User already exists with this same email.",
         )
 
+    new_user = User(**user.model_dump())
+
     try:
         hashed_password = utils.hash(user.password)
-        new_user.password = hashed_password
+        new_user.password = hashed_password  # type: ignore
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
@@ -47,12 +56,16 @@ def creat_user(user: NewUser, db: Session = Depends(get_db)):
 
 
 @router.get("/user/{id}", status_code=status.HTTP_200_OK, response_model=UserOut)
-def get_user(id: int, db: Session = Depends(get_db)):
+def get_user(
+    id: int,
+    db: Session = Depends(get_db),
+):
     user = db.query(User).filter(User.id == id).first()
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
         )
 
     return user

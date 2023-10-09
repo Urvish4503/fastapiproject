@@ -2,7 +2,7 @@ from sqlalchemy import Integer, String, Column
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from ..database import Base
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
 
 
@@ -19,7 +19,7 @@ class User(Base):
 
 class NewUser(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=6)
 
 
 class UserOut(BaseModel):

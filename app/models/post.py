@@ -18,6 +18,14 @@ class Post(Base):
     )
 
 
+class PostOut(BaseModel):
+    id: int
+    title: str
+    content: str
+    published: bool
+    created_at: str
+
+
 class NewPost(BaseModel):
     title: str
     content: str

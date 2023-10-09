@@ -18,20 +18,28 @@ def login(
     db: Session = Depends(get_db),
 ):
     """
-    This will check the email and password.
-    If both is correct then it will give a JWT back.
+    Authenticate user credentials and return a JWT access token if successful.
+
+    Args:
+        user_cred (OAuth2PasswordRequestForm): The user's email and password.
+
+    Raises:
+        HTTPException: If the email or password is incorrect.
+
+    Returns:
+        dict: A dictionary containing the access token and token type.
     """
     user = db.query(User).filter(User.email == user_cred.username).first()
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="No user found with this email.",
         )
 
-    if not verify(user_cred.password, user.password):
+    if not verify(user_cred.password, str(user.password)):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Wrong password",
         )
 
