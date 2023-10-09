@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from typing import Annotated
+from typing import Annotated, Dict
 from ..database import get_db
 from ..utils import verify
 from ..models.user import User
+from ..models.token import Token
 from ..oauth2 import create_access_token
 
 router = APIRouter(
@@ -12,11 +13,11 @@ router = APIRouter(
 )
 
 
-@router.post("/login")
+@router.post("/login", response_model=Token)
 def login(
     user_cred: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db),
-):
+) -> Token:
     """
     Authenticate user credentials and return a JWT access token if successful.
 
@@ -43,6 +44,6 @@ def login(
             detail="Wrong password",
         )
 
-    access_token = create_access_token(data={"user_id": user.id})
+    access_token: Token = create_access_token(data={"user_id": user.id})
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return access_token

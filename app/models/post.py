@@ -2,8 +2,7 @@ from sqlalchemy import Integer, String, Boolean, Column
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from ..database import Base
-from pydantic import BaseModel, ConfigDict
-from typing import List
+from pydantic import BaseModel
 
 
 class Post(Base):

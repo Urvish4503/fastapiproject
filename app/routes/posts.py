@@ -3,20 +3,19 @@ from ..database import get_db
 from ..models.post import Post, NewPost, EditPost, PostOut
 from sqlalchemy.orm import Session
 from typing import Any, Dict
+from ..oauth2 import get_current_user
 
 router = APIRouter(
     tags=["Post"],
 )
 
 
-@router.get("/post/all")
-async def get_all(db: Session = Depends(get_db)) -> Dict[str, Any]:
-    post = db.query(Post).all()
-    return {"message": "All the post are here", "posts": post}
-
-
-@router.post("/post/new", status_code=status.HTTP_201_CREATED, response_model=PostOut)
-async def make_new_post(post: NewPost, db: Session = Depends(get_db)) -> PostOut:
+@router.post("/post/new", status_code=status.HTTP_201_CREATED)
+async def make_new_post(
+    post: NewPost,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user),
+) -> Any:
     new_post = Post(
         title=post.title,
         content=post.content,
@@ -27,11 +26,14 @@ async def make_new_post(post: NewPost, db: Session = Depends(get_db)) -> PostOut
     db.commit()
     db.refresh(new_post)
 
-    return new_post
+    return new_post.id
 
 
 @router.get("/post/{id}", status_code=status.HTTP_200_OK)
-async def get_post(id: int, db: Session = Depends(get_db)) -> Response:
+async def get_post(
+    id: int,
+    db: Session = Depends(get_db),
+) -> Response:
     post = db.query(Post).filter(Post.id == id).first()
 
     if not post:
@@ -47,7 +49,10 @@ async def get_post(id: int, db: Session = Depends(get_db)) -> Response:
 
 
 @router.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_post(id: int, db: Session = Depends(get_db)) -> Response:
+async def delete_post(
+    id: int,
+    db: Session = Depends(get_db),
+) -> None:
     post = db.query(Post).filter(Post.id == id)
 
     if not post.first():
@@ -60,11 +65,13 @@ async def delete_post(id: int, db: Session = Depends(get_db)) -> Response:
 
     db.commit()
 
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
 
 @router.put("/post/{id}", status_code=status.HTTP_200_OK)
-async def edit_post(id: int, new_data: EditPost, db: Session = Depends(get_db)) -> Any:
+async def edit_post(
+    id: int,
+    new_data: EditPost,
+    db: Session = Depends(get_db),
+) -> None:
     post_query = db.query(Post).filter(Post.id == id)
 
     if not post_query.first():
@@ -76,5 +83,3 @@ async def edit_post(id: int, new_data: EditPost, db: Session = Depends(get_db)) 
     post_query.update(new_data.model_dump(), synchronize_session=False)  # type: ignore
 
     db.commit()
-
-    return Response(status_code=status.HTTP_200_OK)
