@@ -2,7 +2,7 @@ from fastapi import Response, status, HTTPException, Depends, APIRouter
 from ..database import get_db
 from ..models.post import Post, NewPost, EditPost, PostOut
 from sqlalchemy.orm import Session
-from typing import Any, Dict
+from typing import Any
 from ..oauth2 import get_current_user
 
 router = APIRouter(
@@ -10,11 +10,11 @@ router = APIRouter(
 )
 
 
-@router.post("/post/new", status_code=status.HTTP_201_CREATED)
+@router.post("/post/new", status_code=status.HTTP_201_CREATED, response_model=PostOut)
 async def make_new_post(
     post: NewPost,
-    db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> Any:
     new_post = Post(
         title=post.title,
@@ -26,13 +26,18 @@ async def make_new_post(
     db.commit()
     db.refresh(new_post)
 
-    return new_post.id
+    # Convert created_at to string before passing it to PostOut model
+    new_post_dict = new_post.__dict__
+    new_post_dict["created_at"] = str(new_post_dict["created_at"])
+
+    return PostOut(**new_post_dict)
 
 
 @router.get("/post/{id}", status_code=status.HTTP_200_OK)
 async def get_post(
     id: int,
     db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user),
 ) -> Response:
     post = db.query(Post).filter(Post.id == id).first()
 
@@ -52,6 +57,7 @@ async def get_post(
 async def delete_post(
     id: int,
     db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user),
 ) -> None:
     post = db.query(Post).filter(Post.id == id)
 
@@ -71,6 +77,7 @@ async def edit_post(
     id: int,
     new_data: EditPost,
     db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user),
 ) -> None:
     post_query = db.query(Post).filter(Post.id == id)
 

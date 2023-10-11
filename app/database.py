@@ -1,6 +1,7 @@
+from typing import Generator, Any
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
 SQLALCHEMY_DATABASE_URL = "postgresql://postgres:urvish4503@localhost/fastapi"
 
@@ -10,10 +11,9 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
-def get_db():
+def get_db() -> Generator[Session, Any, None]:
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-        print("/ᐠ_ ꞈ _ᐟ\\")
