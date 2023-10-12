@@ -17,11 +17,7 @@ async def make_new_post(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Any:
-    new_post = Post(
-        title=post.title,
-        content=post.content,
-        published=post.published,
-    )
+    new_post = Post(**post.model_dump(), user_id=current_user.id)
 
     db.add(new_post)
     db.commit()
@@ -35,11 +31,12 @@ async def make_new_post(
 
 
 @router.get("/post/{id}", status_code=status.HTTP_200_OK)
-async def get_post(
+def get_post(
     id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Response:
+):
+    print(current_user.id)
     post = db.query(Post).filter(Post.id == id).first()
 
     if not post:
@@ -48,10 +45,7 @@ async def get_post(
             detail="Item not found.",
         )
 
-    return Response(
-        status_code=status.HTTP_200_OK,
-        content={"post": post},
-    )
+    return post
 
 
 @router.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -73,6 +67,7 @@ async def delete_post(
     db.commit()
 
 
+# might be useless but I'm keeping it for now.
 @router.put("/post/{id}", status_code=status.HTTP_200_OK)
 async def edit_post(
     id: int,

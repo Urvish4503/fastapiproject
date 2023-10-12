@@ -1,3 +1,4 @@
+import uuid
 from sqlalchemy import Integer, String, Boolean, Column, ForeignKey
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
@@ -25,7 +26,7 @@ class PostOut(BaseModel):
     content: str
     published: bool
     created_at: str
-    user_id: str
+    user_id: uuid.UUID
 
 
 class NewPost(BaseModel):

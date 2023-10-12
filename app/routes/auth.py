@@ -17,7 +17,7 @@ router = APIRouter(
 def login(
     user_cred: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db),
-) -> Token:
+) -> Token | None:
     """
     Authenticate user credentials and return a JWT access token if successful.
 
@@ -32,18 +32,21 @@ def login(
     """
     user = db.query(User).filter(User.email == user_cred.username).first()
 
+    # verfiying the user's email.
     if not user:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No user found with this email.",
         )
 
+    # verifying the user's password.
     if not verify(user_cred.password, str(user.password)):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Wrong password",
         )
 
-    access_token: Token = create_access_token(data={"user_id": user.id})
+    # making the user.id a string because PyJWT only accepts strings and its type is uuid.UUID.
+    access_token: Token = create_access_token(data={"user_id": str(user.id)})
 
     return access_token
