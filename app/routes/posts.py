@@ -1,6 +1,7 @@
 from fastapi import Response, status, HTTPException, Depends, APIRouter
 from ..database import get_db
 from ..models.post import Post, NewPost, EditPost, PostOut
+from ..models.user import User
 from sqlalchemy.orm import Session
 from typing import Any
 from ..oauth2 import get_current_user
@@ -13,7 +14,7 @@ router = APIRouter(
 @router.post("/post/new", status_code=status.HTTP_201_CREATED, response_model=PostOut)
 async def make_new_post(
     post: NewPost,
-    user_id: int = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> Any:
     new_post = Post(
@@ -37,7 +38,7 @@ async def make_new_post(
 async def get_post(
     id: int,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> Response:
     post = db.query(Post).filter(Post.id == id).first()
 
@@ -57,7 +58,7 @@ async def get_post(
 async def delete_post(
     id: int,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> None:
     post = db.query(Post).filter(Post.id == id)
 
@@ -77,7 +78,7 @@ async def edit_post(
     id: int,
     new_data: EditPost,
     db: Session = Depends(get_db),
-    user_id: int = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ) -> None:
     post_query = db.query(Post).filter(Post.id == id)
 

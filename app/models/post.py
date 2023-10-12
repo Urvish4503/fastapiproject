@@ -1,6 +1,7 @@
-from sqlalchemy import Integer, String, Boolean, Column
+from sqlalchemy import Integer, String, Boolean, Column, ForeignKey
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
+from sqlalchemy.dialects.postgresql import UUID
 from ..database import Base
 from pydantic import BaseModel
 
@@ -15,6 +16,7 @@ class Post(Base):
     created_at = Column(
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
+    user_id = Column(UUID, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
 
 class PostOut(BaseModel):
@@ -23,6 +25,7 @@ class PostOut(BaseModel):
     content: str
     published: bool
     created_at: str
+    user_id: str
 
 
 class NewPost(BaseModel):

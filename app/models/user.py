@@ -1,6 +1,8 @@
-from sqlalchemy import Integer, String, Column
+import uuid
+from sqlalchemy import String, Column
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
+from sqlalchemy.dialects.postgresql import UUID
 from ..database import Base
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
@@ -9,7 +11,13 @@ from datetime import datetime
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, nullable=False)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
     email = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     created_at = Column(
@@ -24,5 +32,5 @@ class NewUser(BaseModel):
 
 class UserOut(BaseModel):
     email: EmailStr
-    id: int
+    id: uuid.UUID
     created_at: datetime

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from typing import Annotated, Dict
+from typing import Annotated
 from ..database import get_db
 from ..utils import verify
 from ..models.user import User
@@ -28,7 +28,7 @@ def login(
         HTTPException: If the email or password is incorrect.
 
     Returns:
-        dict: A dictionary containing the access token and token type.
+        Token: A JWT access token.
     """
     user = db.query(User).filter(User.email == user_cred.username).first()
 

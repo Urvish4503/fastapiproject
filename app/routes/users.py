@@ -55,11 +55,12 @@ def creat_user(
         return new_user
 
 
+# may be userless route.
 @router.get("/user/{id}", status_code=status.HTTP_200_OK, response_model=UserOut)
 def get_user(
     id: int,
     db: Session = Depends(get_db),
-):
+) -> User:
     user = db.query(User).filter(User.id == id).first()
 
     if not user:
