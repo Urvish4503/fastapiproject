@@ -1,9 +1,8 @@
-from fastapi import Response, status, HTTPException, Depends, APIRouter
+from fastapi import status, HTTPException, Depends, APIRouter
 from ..database import get_db
 from ..models.post import Post, NewPost, EditPost, PostOut
 from ..models.user import User
 from sqlalchemy.orm import Session
-from typing import Any
 from ..oauth2 import get_current_user
 
 router = APIRouter(
@@ -16,7 +15,7 @@ async def make_new_post(
     post: NewPost,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> Any:
+) -> PostOut:
     new_post = Post(**post.model_dump(), user_id=current_user.id)
 
     db.add(new_post)
@@ -30,13 +29,12 @@ async def make_new_post(
     return PostOut(**new_post_dict)
 
 
-@router.get("/post/{id}", status_code=status.HTTP_200_OK)
+@router.get("/post/{id}", status_code=status.HTTP_200_OK, response_model=PostOut)
 def get_post(
     id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    print(current_user.id)
+    currrent_user: User = Depends(get_current_user),
+) -> PostOut:
     post = db.query(Post).filter(Post.id == id).first()
 
     if not post:
@@ -45,7 +43,11 @@ def get_post(
             detail="Item not found.",
         )
 
-    return post
+    # Convert created_at to string before passing it to PostOut model
+    post_dict = post.__dict__
+    post_dict["created_at"] = str(post_dict["created_at"])
+
+    return PostOut(**post_dict)
 
 
 @router.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -54,15 +56,23 @@ async def delete_post(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> None:
-    post = db.query(Post).filter(Post.id == id)
+    post_query = db.query(Post).filter(Post.id == id)
 
-    if not post.first():
+    post: Post | None = post_query.first()
+
+    if not post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Item not found.",
         )
 
-    post.delete(synchronize_session=False)
+    if post.user_id != current_user.id:  # type: ignore
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You don't have permission to delete this post.",
+        )
+
+    post_query.delete(synchronize_session=False)
 
     db.commit()
 
