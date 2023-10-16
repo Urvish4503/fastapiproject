@@ -1,5 +1,3 @@
-import datetime
-import uuid
 from sqlalchemy import Integer, String, Boolean, Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import TIMESTAMP

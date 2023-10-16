@@ -4,7 +4,7 @@ from ..models.post import Post, NewPost, EditPost, PostOut
 from ..models.user import User
 from sqlalchemy.orm import Session
 from ..oauth2 import get_current_user
-from typing import Annotated, List
+from typing import List
 
 router = APIRouter(
     tags=["Post"],
