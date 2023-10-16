@@ -1,10 +1,13 @@
+import datetime
 import uuid
 from sqlalchemy import Integer, String, Boolean, Column, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.dialects.postgresql import UUID
-from ..database import Base
 from pydantic import BaseModel
+from ..database import Base
+from .user import UserDetail
 
 
 class Post(Base):
@@ -19,6 +22,8 @@ class Post(Base):
     )
     user_id = Column(UUID, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
+    owner = relationship("User")
+
 
 class PostOut(BaseModel):
     id: int
@@ -26,7 +31,7 @@ class PostOut(BaseModel):
     content: str
     published: bool
     created_at: str
-    user_id: uuid.UUID
+    owner: UserDetail
 
 
 class NewPost(BaseModel):

@@ -30,7 +30,10 @@ class NewUser(BaseModel):
     password: str = Field(min_length=6)
 
 
-class UserOut(BaseModel):
+class UserDetail(BaseModel):
     email: EmailStr
     id: uuid.UUID
+
+
+class UserOut(UserDetail):
     created_at: datetime

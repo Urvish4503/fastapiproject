@@ -4,7 +4,7 @@ from ..models.post import Post, NewPost, EditPost, PostOut
 from ..models.user import User
 from sqlalchemy.orm import Session
 from ..oauth2 import get_current_user
-from typing import Annotated, List, Any, Dict
+from typing import Annotated, List
 
 router = APIRouter(
     tags=["Post"],
@@ -15,20 +15,23 @@ router = APIRouter(
 async def get_posts(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> List[Dict[str, Any]]:
-    """This function gets the all the posts of the current user.
+    limit: int = 10,
+) -> List[PostOut]:
+    """This function gets the number of posts of the current user.
 
     Returns:
         List of all the posts of the current user. If user exists or else returns an empty list.
     """
-    posts = db.query(Post).filter(Post.user_id == current_user.id).all()
+    posts = db.query(Post).filter(Post.user_id == current_user.id).limit(limit).all()
 
-    # Convert created_at to string before passing it to PostOut model
-    posts_dict = [post.__dict__ for post in posts]
-    for post in posts_dict:
-        post["created_at"] = str(post["created_at"])
+    posts_list = []
+    for post in posts:
+        posts_list.append(post)
 
-    return posts_dict
+    for post in posts_list:
+        post.created_at = post.created_at.strftime("%Y-%m-%d %H:%M:%S")
+
+    return posts_list
 
 
 @router.post("/post/new", status_code=status.HTTP_201_CREATED, response_model=PostOut)
@@ -52,19 +55,20 @@ async def make_new_post(
     db.commit()
     db.refresh(new_post)
 
-    # Convert created_at to string before passing it to PostOut model
-    new_post_dict = new_post.__dict__
-    new_post_dict["created_at"] = str(new_post_dict["created_at"])
+    out_post: PostOut = new_post
+    out_post.created_at = new_post.created_at.strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )  # Convert created_at to string
 
-    return PostOut(**new_post_dict)
+    return out_post
 
 
 @router.get("/post/{id}", status_code=status.HTTP_200_OK, response_model=PostOut)
-def get_post(
+async def get_post(
     id: int,
     db: Session = Depends(get_db),
-    currrent_user: User = Depends(get_current_user),
-):
+    current_user: User = Depends(get_current_user),
+) -> PostOut:
     post = db.query(Post).filter(Post.id == id).first()
 
     if not post:
@@ -73,17 +77,16 @@ def get_post(
             detail="Item not found.",
         )
 
-    if not post.published and post.user_id != currrent_user.id:  # type: ignore
+    if not post.published and post.user_id != current_user.id:  # type: ignore
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="You don't have permission to view this post.",
         )
 
-    # Convert created_at to string before passing it to PostOut model
-    post_dict = post.__dict__
-    post_dict["created_at"] = str(post_dict["created_at"])
+    post_out: PostOut = post
+    post_out.created_at = post.created_at.strftime("%Y-%m-%d %H:%M:%S")
 
-    return PostOut(**post_dict)
+    return post_out
 
 
 @router.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)
