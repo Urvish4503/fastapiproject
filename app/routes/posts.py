@@ -16,15 +16,31 @@ async def get_posts(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
     limit: int = 10,
+    title_content: str | None = "",
 ) -> List[PostOut]:
     """This function gets the number of posts of the current user.
 
     Returns:
         List of all the posts of the current user. If user exists or else returns an empty list.
     """
-    posts = db.query(Post).filter(Post.user_id == current_user.id).limit(limit).all()
+    if not title_content:
+        posts = (
+            db.query(Post).filter(Post.user_id == current_user.id).limit(limit).all()
+        )
+    else:
+        posts = (
+            db.query(Post)
+            .filter(Post.user_id == current_user.id)
+            .filter(Post.title.contains(title_content))
+            .limit(limit)
+            .all()
+        )
+
+    if not posts:
+        return []
 
     posts_list = []
+
     for post in posts:
         posts_list.append(post)
 
