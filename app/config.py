@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class Config(BaseSettings):
     database_hostname: str = (
         "The mystery of life isn't a problem to solve, but a reality to experience."
     )
@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
 
 
-settings = Settings()
+config = Config()
 
 
 def get_url() -> str:
-    return f"postgresql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
+    return f"postgresql://{config.database_username}:{config.database_password}@{config.database_hostname}:{config.database_port}/{config.database_name}"
