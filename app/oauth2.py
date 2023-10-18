@@ -48,16 +48,16 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User | None:
-    credentaials_exception = HTTPException(
+    credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credential",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    current_user_verification = verify_access_token(token, credentaials_exception)
+    current_user_verification = verify_access_token(token, credentials_exception)
 
     if current_user_verification is None:
-        raise credentaials_exception
+        raise credentials_exception
 
     current_user = (
         db.query(User).filter(User.id == current_user_verification.id).first()
