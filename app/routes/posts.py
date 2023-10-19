@@ -36,18 +36,7 @@ async def get_posts(
             .all()
         )
 
-    if not posts:
-        return []
-
-    posts_list = []
-
-    for post in posts:
-        posts_list.append(post)
-
-    for post in posts_list:
-        post.created_at = post.created_at.strftime("%Y-%m-%d %H:%M:%S")
-
-    return posts_list
+    return [post for post in posts]
 
 
 @router.post("/post/new", status_code=status.HTTP_201_CREATED, response_model=PostOut)
@@ -71,12 +60,7 @@ async def make_new_post(
     db.commit()
     db.refresh(new_post)
 
-    out_post: PostOut = new_post
-    out_post.created_at = new_post.created_at.strftime(
-        "%Y-%m-%d %H:%M:%S"
-    )  # Convert created_at to string
-
-    return out_post
+    return new_post
 
 
 @router.get("/post/{id}", status_code=status.HTTP_200_OK, response_model=PostOut)
@@ -85,7 +69,13 @@ async def get_post(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> PostOut:
-    post = db.query(Post).filter(Post.id == id).first()
+    post = (
+        db.query(Post)
+        .filter(
+            Post.id == id, (Post.published == True) | (Post.user_id == current_user.id)
+        )
+        .first()
+    )
 
     if not post:
         raise HTTPException(
@@ -99,10 +89,7 @@ async def get_post(
             detail="You don't have permission to view this post.",
         )
 
-    post_out: PostOut = post
-    post_out.created_at = post.created_at.strftime("%Y-%m-%d %H:%M:%S")
-
-    return post_out
+    return post
 
 
 @router.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)

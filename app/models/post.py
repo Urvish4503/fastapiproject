@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy import Integer, String, Boolean, Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -28,7 +29,7 @@ class PostOut(BaseModel):
     title: str
     content: str
     published: bool
-    created_at: str
+    created_at: datetime
     owner: UserDetail
 
 
