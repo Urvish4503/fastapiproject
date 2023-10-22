@@ -4,7 +4,7 @@ from ..models.post import Post, NewPost, EditPost, PostOut
 from ..models.user import User
 from sqlalchemy.orm import Session
 from ..oauth2 import get_current_user
-from typing import List
+from typing import List, Annotated
 
 router = APIRouter(
     tags=["Post"],
@@ -13,8 +13,8 @@ router = APIRouter(
 
 @router.get("/posts", status_code=status.HTTP_200_OK, response_model=List[PostOut])
 async def get_posts(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
     limit: int = 10,
     title_content: str | None = "",
 ) -> List[PostOut]:
@@ -42,8 +42,8 @@ async def get_posts(
 @router.post("/post/new", status_code=status.HTTP_201_CREATED, response_model=PostOut)
 async def make_new_post(
     post: NewPost,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
 ) -> PostOut:
     """
     Create a new post for the current user.
@@ -66,8 +66,8 @@ async def make_new_post(
 @router.get("/post/{id}", status_code=status.HTTP_200_OK, response_model=PostOut)
 async def get_post(
     id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
 ) -> PostOut:
     post = (
         db.query(Post)
@@ -95,8 +95,8 @@ async def get_post(
 @router.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(
     id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> None:
     """
     Delete a post with the given id, if the current user has permission to do so.
@@ -138,8 +138,8 @@ async def delete_post(
 async def edit_post(
     id: int,
     new_data: EditPost,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> None:
     post_query = db.query(Post).filter(Post.id == id)
 

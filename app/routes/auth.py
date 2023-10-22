@@ -16,7 +16,7 @@ router = APIRouter(
 @router.post("/login", response_model=Token)
 def login(
     user_cred: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: Session = Depends(get_db),
+    db: Annotated[Session, Depends(get_db)],
 ) -> Token | None:
     """
     Authenticate user credentials and return a JWT access token if successful.

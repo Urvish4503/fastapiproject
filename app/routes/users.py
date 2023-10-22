@@ -1,7 +1,8 @@
 from fastapi import status, HTTPException, Depends, APIRouter
-from ..database import get_db
-from ..models.user import User, NewUser, UserOut
 from sqlalchemy.orm import Session
+from typing import Annotated
+from ..models.user import User, NewUser, UserOut
+from ..database import get_db
 from .. import utils
 
 router = APIRouter(
@@ -12,7 +13,7 @@ router = APIRouter(
 @router.post("/user/new", status_code=status.HTTP_201_CREATED, response_model=UserOut)
 def creat_user(
     user: NewUser,
-    db: Session = Depends(get_db),
+    db: Annotated[Session, Depends(get_db)],
 ):
     """
     Create a new user.
@@ -59,7 +60,7 @@ def creat_user(
 @router.get("/user/{id}", status_code=status.HTTP_200_OK, response_model=UserOut)
 def get_user(
     id: int,
-    db: Session = Depends(get_db),
+    db: Annotated[Session, Depends(get_db)],
 ) -> User:
     user = db.query(User).filter(User.id == id).first()
 
