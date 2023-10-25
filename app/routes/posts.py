@@ -36,18 +36,8 @@ async def get_posts(
             .all()
         )
 
-    if not posts:
-        return []
 
-    posts_list = []
-
-    for post in posts:
-        posts_list.append(post)
-
-    for post in posts_list:
-        post.created_at = post.created_at.strftime("%Y-%m-%d %H:%M:%S")
-
-    return posts_list
+    return [post for post in posts]
 
 
 @router.post("/post/new", status_code=status.HTTP_201_CREATED, response_model=PostOut)
@@ -72,10 +62,6 @@ async def make_new_post(
     db.refresh(new_post)
 
     out_post: PostOut = new_post
-    out_post.created_at = new_post.created_at.strftime(
-        "%Y-%m-%d %H:%M:%S"
-    )  # Convert created_at to string
-
     return out_post
 
 
@@ -100,7 +86,6 @@ async def get_post(
         )
 
     post_out: PostOut = post
-    post_out.created_at = post.created_at.strftime("%Y-%m-%d %H:%M:%S")
 
     return post_out
 

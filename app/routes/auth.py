@@ -9,6 +9,7 @@ from ..models.token import Token
 from ..oauth2 import create_access_token
 
 router = APIRouter(
+    prefix="/auth",
     tags=["Authentication"],
 )
 
