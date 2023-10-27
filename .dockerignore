@@ -1,0 +1,11 @@
+.git
+.gitignore
+*.md
+*/*.md
+*/__pycache__
+LICENSE
+.env
+.env-example
+
+.vscode
+.idea
