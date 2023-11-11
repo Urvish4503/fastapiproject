@@ -56,7 +56,6 @@ def creat_user(
         return new_user
 
 
-# ! Not working dont send requests to this route or else it will crashes the server.
 @router.get("/user/{id}", status_code=status.HTTP_200_OK, response_model=UserOut)
 def get_user(
     id: int,

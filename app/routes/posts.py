@@ -16,14 +16,14 @@ async def get_posts(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
     limit: int = 10,
-    title_content: str = "",
+    title_content: str | None = None,
 ) -> List[PostOut]:
     """This function gets the number of posts of the current user.
 
     Returns:
         List of all the posts of the current user. If user exists or else returns an empty list.
     """
-    if title_content == "":
+    if not title_content:
         posts = (
             db.query(Post).filter(Post.user_id == current_user.id).limit(limit).all()
         )

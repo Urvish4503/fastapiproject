@@ -3,12 +3,12 @@ services:
   api:
     build: .
     ports:
-      - 8000:8000
+      - "8000:8000"
     volumes:
       - ./:/usr/src/app
     env_file:
-        - ./.env
-    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000 --reload-exclude venv
+      - ./.env
+    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
     depends_on:
       - db
 
@@ -20,10 +20,20 @@ services:
       - POSTGRES_HOST_AUTH_METHOD=trust
 
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
       - postgres-db:/var/lib/postgresql/data
 
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: urvish@baba.com
+      PGADMIN_DEFAULT_PASSWORD: urvish
+    ports:
+      - 8080:80
+    depends_on:
+      - db
 
 volumes:
   postgres-db:

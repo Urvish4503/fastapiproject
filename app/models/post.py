@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from pydantic import BaseModel
 from ..database import Base
 from .user import UserDetail
+from .vote import Votes
 
 
 class Post(Base):
@@ -20,6 +21,8 @@ class Post(Base):
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
     user_id = Column(UUID, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    likes = relationship("Votes", back_populates="post")
 
     owner = relationship("User")
 
