@@ -7,7 +7,6 @@ from sqlalchemy.dialects.postgresql import UUID
 from pydantic import BaseModel
 from ..database import Base
 from .user import UserDetail
-from .vote import Votes
 
 
 class Post(Base):
