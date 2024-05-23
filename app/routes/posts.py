@@ -36,6 +36,7 @@ async def get_posts(
             .all()
         )
 
+
     output: List[PostOut] = [post for post in posts]
 
     if not output:
@@ -49,6 +50,7 @@ async def get_posts(
         )
 
     return output
+
 
 
 @router.post("/post/new", status_code=status.HTTP_201_CREATED, response_model=PostOut)
@@ -73,6 +75,7 @@ async def make_new_post(
     db.refresh(new_post)
 
     return new_post
+
 
 
 @router.get("/post/{id}", status_code=status.HTTP_200_OK, response_model=PostOut)
@@ -102,6 +105,7 @@ async def get_post(
         )
 
     return post
+
 
 
 @router.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)

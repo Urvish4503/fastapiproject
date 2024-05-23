@@ -5,6 +5,7 @@ from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from sqlalchemy.dialects.postgresql import UUID
 from pydantic import BaseModel
+from datetime import datetime
 from ..database import Base
 from .user import UserDetail
 
