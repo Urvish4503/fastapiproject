@@ -4,7 +4,7 @@ from ..models.post import Post, NewPost, EditPost, PostOut
 from ..models.user import User
 from sqlalchemy.orm import Session
 from ..oauth2 import get_current_user
-from typing import List
+from typing import List, Annotated
 
 router = APIRouter(
     tags=["Post"],
@@ -13,10 +13,10 @@ router = APIRouter(
 
 @router.get("/posts", status_code=status.HTTP_200_OK, response_model=List[PostOut])
 async def get_posts(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
     limit: int = 10,
-    title_content: str | None = "",
+    title_content: str | None = None,
 ) -> List[PostOut]:
     """This function gets the number of posts of the current user.
 
@@ -37,14 +37,27 @@ async def get_posts(
         )
 
 
-    return [post for post in posts]
+    output: List[PostOut] = [post for post in posts]
+
+    if not output:
+        meassage = "."
+        if title_content != "":
+            meassage = f" with {title_content} in title."
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No posts found{meassage}",
+        )
+
+    return output
+
 
 
 @router.post("/post/new", status_code=status.HTTP_201_CREATED, response_model=PostOut)
 async def make_new_post(
     post: NewPost,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
 ) -> PostOut:
     """
     Create a new post for the current user.
@@ -61,17 +74,23 @@ async def make_new_post(
     db.commit()
     db.refresh(new_post)
 
-    out_post: PostOut = new_post
-    return out_post
+    return new_post
+
 
 
 @router.get("/post/{id}", status_code=status.HTTP_200_OK, response_model=PostOut)
 async def get_post(
     id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
 ) -> PostOut:
-    post = db.query(Post).filter(Post.id == id).first()
+    post = (
+        db.query(Post)
+        .filter(
+            Post.id == id, (Post.published == True) | (Post.user_id == current_user.id)
+        )
+        .first()
+    )
 
     if not post:
         raise HTTPException(
@@ -85,16 +104,15 @@ async def get_post(
             detail="You don't have permission to view this post.",
         )
 
-    post_out: PostOut = post
+    return post
 
-    return post_out
 
 
 @router.delete("/post/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_post(
     id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> None:
     """
     Delete a post with the given id, if the current user has permission to do so.
@@ -136,8 +154,8 @@ async def delete_post(
 async def edit_post(
     id: int,
     new_data: EditPost,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
 ) -> None:
     post_query = db.query(Post).filter(Post.id == id)
 

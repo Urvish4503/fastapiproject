@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy import Integer, String, Boolean, Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -20,6 +21,8 @@ class Post(Base):
         TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False
     )
     user_id = Column(UUID, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    likes = relationship("Votes", back_populates="post")
 
     owner = relationship("User")
 
